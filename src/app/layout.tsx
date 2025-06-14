@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -5,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
   title: 'DetailCalc - Scientific Calculator',
   description: 'An advanced scientific calculator by Firebase Studio',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1', // Added for better mobile scaling
 };
 
 export default function RootLayout({

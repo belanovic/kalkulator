@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -21,16 +22,15 @@ export default function Home() {
   } = useCalculatorLogic();
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-background to-muted/50 font-body">
-      <div className="w-full max-w-4xl mx-auto">
-        <h1 className="text-4xl font-headline font-bold text-primary text-center mb-6">
+    <main className="flex flex-col items-center justify-center min-h-screen p-2 sm:p-4 bg-gradient-to-br from-background to-muted/50 font-body">
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
+        <h1 className="text-3xl sm:text-4xl font-headline font-bold text-primary text-center mb-4 sm:mb-6">
           DetailCalc
         </h1>
-        <Card className="shadow-2xl rounded-xl overflow-hidden">
-          {/* Container for calculator and history. Fixed height and flex layout. */}
-          <div className="flex flex-col md:flex-row h-[calc(100vh-10rem)] max-h-[550px] md:h-[550px]">
+        <Card className="shadow-2xl rounded-xl overflow-hidden w-full max-w-md md:max-w-4xl">
+          <div className="flex flex-col md:flex-row h-[calc(100vh-12rem)] sm:h-[calc(100vh-10rem)] max-h-[600px] md:h-[550px] lg:h-[600px]">
             {/* Calculator main area: display and keypad */}
-            <div className="flex flex-col h-[65%] md:h-full md:flex-1 md:w-2/3 lg:w-3/4">
+            <div className="flex flex-col md:flex-1 md:w-2/3 lg:w-3/4 h-[65%] md:h-full">
               <CalculatorDisplay 
                 mainDisplay={displayValue} 
                 expressionDisplay={currentExpression}
@@ -41,18 +41,21 @@ export default function Home() {
                 isRadians={isRadians} 
               />
             </div>
+            
             <Separator orientation="vertical" className="hidden md:block mx-0 h-auto" />
-            {/* History area wrapper */}
-            <div className="h-[35%] md:h-full w-full md:w-auto">
+            
+            {/* History area - ensure it takes up its allocated space */}
+            <div className="md:w-1/3 lg:w-1/4 h-[35%] md:h-full overflow-hidden">
               <CalculationHistory 
                 history={history} 
                 onRecall={recallFromHistory} 
-                onClear={clearHistory} 
+                onClear={clearHistory}
+                className="border-l-0 md:border-l"
               />
             </div>
           </div>
         </Card>
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6">
           A detailed scientific calculator.
         </p>
       </div>

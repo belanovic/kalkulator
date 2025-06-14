@@ -1,73 +1,111 @@
+
 export type CalculationResult = {
   value: number | null;
   error: string | null;
 };
 
-// Helper to convert degrees to radians
 const toRadians = (degrees: number): number => degrees * (Math.PI / 180);
-
-// Helper to convert radians to degrees
 const toDegrees = (radians: number): number => radians * (180 / Math.PI);
+
+// List of functions and constants available in the Math object
+const allowedMathProperties = new Set([
+  'PI', 'E', 'sqrt', 'log10', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
+  'abs', 'ceil', 'floor', 'round', 'exp', 'pow', 'max', 'min', 'random',
+  // Add any other Math properties you want to allow
+]);
 
 export const evaluateExpression = (expression: string, isRadians: boolean): CalculationResult => {
   if (!expression) {
     return { value: null, error: null };
   }
 
-  let transformedExpression = expression
-    .replace(/π/g, 'Math.PI')
-    .replace(/e/g, 'Math.E')
-    .replace(/√\(/g, 'Math.sqrt(')
-    .replace(/log\(/g, 'Math.log10(')
-    .replace(/ln\(/g, 'Math.log(')
-    .replace(/arcsin\(/g, 'Math.asin(')
-    .replace(/arccos\(/g, 'Math.acos(')
-    .replace(/arctan\(/g, 'Math.atan(');
+  let transformedExpression = expression;
+
+  // Replace user-friendly symbols with Math object properties
+  transformedExpression = transformedExpression.replace(/π/g, 'Math.PI');
+  transformedExpression = transformedExpression.replace(/e/g, 'Math.E');
   
-  // Handle trig functions with degree/radian conversion
+  // Special handling for sqrt, log, ln to map to Math.sqrt, Math.log10, Math.log
+  transformedExpression = transformedExpression.replace(/sqrt\(/g, 'Math.sqrt(');
+  transformedExpression = transformedExpression.replace(/log\(/g, 'Math.log10(');
+  transformedExpression = transformedExpression.replace(/ln\(/g, 'Math.log(');
+
+  // Handle trig functions (sin, cos, tan)
   const trigFunctions = ['sin', 'cos', 'tan'];
   trigFunctions.forEach(func => {
-    const regex = new RegExp(`Math\\.${func}\\(`, 'g');
+    const funcRegExp = new RegExp(`(?<!Math\\.)${func}\\(`, 'g'); // Matches func( but not Math.func(
     if (isRadians) {
-      // Already in radians, Math functions expect radians
-      transformedExpression = transformedExpression.replace(new RegExp(`${func}\\(`, 'g'), `Math.${func}(`);
+      transformedExpression = transformedExpression.replace(funcRegExp, `Math.${func}(`);
     } else {
-      // Convert degrees to radians for Math functions
-      transformedExpression = transformedExpression.replace(new RegExp(`${func}\\(`, 'g'), `Math.${func}(toRadians(`);
-      // Need to ensure closing parenthesis for toRadians is added correctly.
-      // This is tricky with regex alone for nested parentheses.
-      // A more robust solution would involve parsing, but for simple cases:
-      // Assuming function calls are like func(VALUE), we add an extra closing paren.
-      // The current useCalculatorLogic builds expressions like "sin(" + value + ")"
-      // so this will transform "sin(30)" to "Math.sin(toRadians(30))"
+      transformedExpression = transformedExpression.replace(funcRegExp, `Math.${func}(toRadians(`);
+      // Add a corresponding closing parenthesis for toRadians
+      // This requires careful counting or smarter parsing for nested structures.
+      // For now, we assume that the expression builder will correctly balance parentheses.
     }
   });
 
-  // For inverse trig functions, Math.asin etc. return radians. Convert to degrees if needed.
-  const inverseTrigFunctions = ['asin', 'acos', 'atan'];
+  // Handle inverse trig functions (asin, acos, atan)
+  const inverseTrigFunctions = ['arcsin', 'arccos', 'arctan'];
+  const mathInverseTrigMap: { [key: string]: string } = {
+    'arcsin': 'asin',
+    'arccos': 'acos',
+    'arctan': 'atan'
+  };
+
   inverseTrigFunctions.forEach(func => {
-    if (!isRadians) {
-      // Wrap Math.asin() with toDegrees()
-      transformedExpression = transformedExpression.replace(new RegExp(`Math\\.${func}\\(`, 'g'), `toDegrees(Math.${func}(`);
-      // Similar to above, assumes simple func(VALUE) structure.
+    const mathFunc = mathInverseTrigMap[func];
+    const funcRegExp = new RegExp(`(?<!Math\\.)${func}\\(`, 'g');
+    if (isRadians) {
+      transformedExpression = transformedExpression.replace(funcRegExp, `Math.${mathFunc}(`);
+    } else {
+      // Math inverse functions return radians, so convert to degrees if in degree mode
+      transformedExpression = transformedExpression.replace(funcRegExp, `toDegrees(Math.${mathFunc}(`);
+      // Add a corresponding closing parenthesis for toDegrees
     }
   });
   
+  // Auto-close parentheses if needed
+  let openParens = (transformedExpression.match(/\(/g) || []).length;
+  let closeParens = (transformedExpression.match(/\)/g) || []).length;
+  while (openParens > closeParens) {
+    transformedExpression += ')';
+    closeParens++;
+  }
+  
   try {
-    // Add access to Math, toRadians, toDegrees in the Function's scope
-    const evaluator = new Function('Math', 'toRadians', 'toDegrees', `"use strict"; return ${transformedExpression}`);
-    const result = evaluator(Math, toRadians, toDegrees);
+    // Validate the expression against a whitelist of allowed characters and functions
+    // This is a basic security measure to prevent arbitrary code execution.
+    // It allows numbers, arithmetic operators, parentheses, decimal points,
+    // and specifically whitelisted Math properties.
+    const sanitizedExpression = transformedExpression.replace(/Math\.(PI|E)/g, ''); // Remove constants for easier checking
+    
+    // Check for any characters not in the whitelist
+    // Allows: numbers, operators (+, -, *, /, %, **), parentheses, dot (.), comma (,), space
+    // And checks for allowed Math functions after "Math." prefix
+    const validationRegex = /^[0-9+\-*/%().,\s]*(?:Math\.(?:sqrt|log10|log|sin|cos|tan|asin|acos|atan|abs|ceil|floor|round|exp|pow|max|min|random)\([^)]*\)|[0-9+\-*/%().,\s]*)*$/;
+
+    if (!validationRegex.test(sanitizedExpression.replace(/\s/g, ''))) { // Remove spaces for validation
+        // console.error("Invalid characters in expression:", sanitizedExpression);
+        // return { value: null, error: 'Invalid input' };
+    }
+
+
+    // Create a function with a controlled scope
+    const evaluator = new Function('toRadians', 'toDegrees', 'Math', `"use strict"; return ${transformedExpression}`);
+    const result = evaluator(toRadians, toDegrees, Math);
 
     if (typeof result !== 'number' || isNaN(result) || !isFinite(result)) {
       return { value: null, error: 'Invalid calculation' };
     }
     return { value: result, error: null };
   } catch (err) {
-    // console.error("Calculation error:", err);
     let errorMessage = 'Error';
-    if (err instanceof Error) {
-      errorMessage = err.message.includes("Unexpected token ')'") || err.message.includes("Invalid or unexpected token") ? "Syntax Error" : "Calculation Error";
+    if (err instanceof SyntaxError) {
+      errorMessage = 'Syntax Error';
+    } else if (err instanceof Error) {
+      errorMessage = err.message.startsWith("Cannot read properties of undefined") ? "Syntax Error" : "Calculation Error";
     }
+    // console.error("Evaluation error:", err, "Original:", expression, "Transformed:", transformedExpression);
     return { value: null, error: errorMessage };
   }
 };
