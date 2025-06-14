@@ -13,13 +13,13 @@ interface CalculatorDisplayProps {
 const CalculatorDisplay: React.FC<CalculatorDisplayProps> = ({ mainDisplay, expressionDisplay, onCopy }) => {
   return (
     <div className="bg-card/80 dark:bg-neutral-800/80 p-4 rounded-t-lg shadow-inner relative min-h-[120px] flex flex-col justify-end text-right overflow-hidden">
-      {expressionDisplay && (
-         <ScrollArea className="h-8 w-full mb-1">
-          <p className="text-sm text-muted-foreground break-all whitespace-nowrap px-2" aria-label="Current expression">
-            {expressionDisplay || " "}
-          </p>
-        </ScrollArea>
-      )}
+      {/* Always render this ScrollArea to maintain consistent height, even if expressionDisplay is empty */}
+      <ScrollArea className="h-8 w-full mb-1">
+        <p className="text-sm text-muted-foreground break-all whitespace-nowrap px-2" aria-label="Current expression">
+          {expressionDisplay || "\u00A0"} {/* Use non-breaking space for true emptiness to maintain line height */}
+        </p>
+      </ScrollArea>
+      
       <ScrollArea className="h-14 w-full">
         <p 
           className="text-4xl lg:text-5xl font-headline font-semibold text-primary break-all whitespace-nowrap px-2"
