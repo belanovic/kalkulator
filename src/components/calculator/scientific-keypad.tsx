@@ -1,6 +1,6 @@
 import React from 'react';
 import KeypadButton from './keypad-button';
-import { calculatorButtonsLayout, ButtonConfig } from './buttons.config.tsx';
+import { calculatorButtonsLayout, type ButtonConfig } from './buttons.config'; // Changed import path
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
