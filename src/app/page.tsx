@@ -27,8 +27,10 @@ export default function Home() {
           DetailCalc
         </h1>
         <Card className="shadow-2xl rounded-xl overflow-hidden">
-          <div className="flex flex-col md:flex-row h-[calc(100vh-10rem)] max-h-[550px] md:h-[550px]"> {/* Fixed height for landscape consistency */}
-            <div className="flex flex-col flex-1 md:w-2/3 lg:w-3/4">
+          {/* Container for calculator and history. Fixed height and flex layout. */}
+          <div className="flex flex-col md:flex-row h-[calc(100vh-10rem)] max-h-[550px] md:h-[550px]">
+            {/* Calculator main area: display and keypad */}
+            <div className="flex flex-col h-[65%] md:h-full md:flex-1 md:w-2/3 lg:w-3/4">
               <CalculatorDisplay 
                 mainDisplay={displayValue} 
                 expressionDisplay={currentExpression}
@@ -40,11 +42,14 @@ export default function Home() {
               />
             </div>
             <Separator orientation="vertical" className="hidden md:block mx-0 h-auto" />
-            <CalculationHistory 
-              history={history} 
-              onRecall={recallFromHistory} 
-              onClear={clearHistory} 
-            />
+            {/* History area wrapper */}
+            <div className="h-[35%] md:h-full w-full md:w-auto">
+              <CalculationHistory 
+                history={history} 
+                onRecall={recallFromHistory} 
+                onClear={clearHistory} 
+              />
+            </div>
           </div>
         </Card>
         <p className="text-center text-sm text-muted-foreground mt-6">
