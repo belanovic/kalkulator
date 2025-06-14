@@ -1,7 +1,8 @@
 import React from 'react';
 import KeypadButton from './keypad-button';
-import { calculatorButtonsLayout, ButtonConfig } from './buttons.config';
+import { calculatorButtonsLayout, ButtonConfig } from './buttons.config.tsx';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface ScientificKeypadProps {
   onButtonClick: (value: string, type: string) => void;
