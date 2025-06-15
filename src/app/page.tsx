@@ -24,11 +24,8 @@ export default function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-background to-muted/50 font-body">
       <div className="w-full flex flex-col items-center">
-        <h1 className="text-3xl sm:text-4xl font-headline font-bold text-primary text-center my-4 sm:my-6">
-          DetailCalc
-        </h1>
-        <Card className="shadow-2xl rounded-xl overflow-hidden w-full">
-          <div className="flex flex-col md:flex-row h-[calc(100vh-12rem)] sm:h-[calc(100vh-10rem)] max-h-[600px] md:h-[550px] lg:h-[600px]">
+        <Card className="shadow-2xl rounded-xl overflow-hidden w-full h-[calc(100vh_-_4rem)] sm:h-[calc(100vh_-_4rem)] max-h-[600px] md:h-[550px] lg:h-[600px]">
+          <div className="flex flex-col md:flex-row h-full">
             {/* Calculator main area: display and keypad */}
             <div className="flex flex-col md:flex-1 md:w-2/3 lg:w-3/4 h-[65%] md:h-full">
               <CalculatorDisplay 
@@ -55,9 +52,6 @@ export default function Home() {
             </div>
           </div>
         </Card>
-        <p className="text-center text-xs sm:text-sm text-muted-foreground mt-4 sm:mt-6">
-          A detailed scientific calculator.
-        </p>
       </div>
     </main>
   );
